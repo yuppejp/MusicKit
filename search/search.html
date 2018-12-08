@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+
+    <!-- Configuring MusicKit JS -->
+    <script src="https://js-cdn.music.apple.com/musickit/v1/musickit.js"></script>
+
+    <title>MusicKit Features Using JavaScript</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" />
+</head>
+
+<body>
+    <div id="app">
+        <p></p>
+        <div class="container">
+            <div class=" input-group">
+                <input type="text" class="form-control" placeholder="アーティスト名" id="keyword">
+                <div class="input-group-append">
+                    <button class="btn btn-outline-secondary" type="button" onclick=search(document.getElementById('keyword').value)>検索</button>
+                </div>
+            </div>
+
+            <table class="table">
+                <tr v-for="(d, i) in albums">
+                    <td><img v-bind:src="d.attributes.artwork.url.replace(/({w}|{h})/g, '50')"></td>
+                    <td>{{ d.attributes.name }}</td>
+                    <td>{{ d.attributes.artistName }}</td>
+                    <td>{{ d.attributes.releaseDate }}</td>
+                    <!-- <td>{{ d.attributes.editorialNotes.short }}</td> -->
+                    <td>
+                        <button type="button" class="btn btn-link" v-bind:value="d.id" onclick=play(this.value)>▶︎</button>
+                        <button type="button" class="btn btn-link" onclick=music.player.stop()>■</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+
+    <script>
+        var music = null;
+
+        document.addEventListener('musickitloaded', function () {
+            console.log('musickitloaded');
+            // MusicKit global is now defined
+            MusicKit.configure({
+                developerToken: 'ABCDEF123GHIJ456KLMN78900PQR1234STU56VWX789Z0',
+                app: {
+                    name: 'My Cool Web App',
+                    build: '2018.11.23'
+                }
+            });
+
+            console.log('getInstance');
+            music = MusicKit.getInstance();
+
+            // This ensures user authorization before calling play():
+            music.authorize().then(function () {
+                console.log('authorized');
+            });
+        });
+
+        function search(keyword) {
+            music.api.search(
+                keyword,
+                { limit: 10, types: 'artists,albums' }).then(function (results) {
+                    console.table(results.albums.data[0].attributes);
+                    Vue.set(vm, 'albums', results.albums.data)
+                });
+        }
+
+        function play(id) {
+            music.setQueue({
+                album: id
+            }).then(function (queue) {
+                // Queue is instantiated and set on music player.
+                console.log('queue: ' + queue);
+                music.player.play().then(function (pos) {
+                    console.log('pos:' + pos);
+                });
+            });
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"></script>
+    <script src="./search.js"></script>
+
+</body>
+
+</html>

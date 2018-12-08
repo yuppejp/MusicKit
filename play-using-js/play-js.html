@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+
+    <script src="https://js-cdn.music.apple.com/musickit/v1/musickit.js"></script>
+
+    <title>MusicKit Features Using JavaScript</title>
+</head>
+
+<body>
+    <center>
+
+        <button id="apple-music-authorize">authorize</button>
+        <button id="apple-music-unauthorize">unauthorize</button>
+
+        <!-- Add Media Playback Controls -->
+        <button onclick=music.player.play()>play</button>
+        <button onclick=music.player.stop()>stop</button>
+        <button onclick=music.player.pause()>Pause</button>
+        <button onclick=music.player.skipToNextItem()>skipToNextItem</button>
+        <button onclick=music.player.skipToPreviousItem()>skipToPreviousItem</button>
+    </center>
+
+    <script>
+        var music = null;
+
+        document.addEventListener('musickitloaded', function () {
+            // MusicKit global is now defined
+            MusicKit.configure({
+                developerToken: 'ABCDEF123GHIJ456KLMN78900PQR1234STU56VWX789Z0',
+                app: {
+                    name: 'My Cool Web App',
+                    build: '2018.11.17'
+                }
+            });
+
+            console.log('getInstance');
+            music = MusicKit.getInstance();
+
+            // This ensures user authorization before calling play():
+            music.authorize().then(function () {
+
+                music.api.search(
+                    '宇多田ヒカル',
+                    { limit: 2, types: 'artists,albums' }).then(function (results) {
+                        console.table(results.albums);
+
+                        console.log('setQueue');
+                        var id = results.albums.data[0].id;
+                        music.setQueue({
+                            album: id
+                        }).then(function (queue) {
+                            // Queue is instantiated and set on music player.
+                            console.log('queue: ' + queue);
+                            music.player.play().then(function (pos) {
+                                console.log('pos:' + pos);
+                            });
+                        });
+
+                    });
+
+                // // Set the playback queue to a specific album, and play
+                // console.log('setQueue');
+                // music.setQueue({ playlist: 'pl.f4d106fed2bd41149aaacabb233eb5eb' }).then(function (queue) {
+                //     // Queue is instantiated and set on music player.
+                //     console.log('play');
+                //     music.player.play().then(function (pos) {
+                //         console.log(pos);
+                //     });
+                // });
+            });
+
+        });
+
+
+    </script>
+</body>
+
+</html>
